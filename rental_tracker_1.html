@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ค่าเช่าบ้าน">
+<title>ระบบติดตามค่าเช่าบ้าน</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #F5F4F0;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text2: #6B6B6B;
+    --text3: #ABABAB;
+    --border: #E8E6E0;
+    --green: #1D9E75;
+    --green-bg: #E1F5EE;
+    --green-text: #085041;
+    --red: #D85A30;
+    --red-bg: #FAECE7;
+    --red-text: #712B13;
+    --accent: #2C2C2A;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  .topbar {
+    background: var(--accent);
+    color: #fff;
+    padding: 16px 16px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
+  .topbar p { font-size: 12px; opacity: 0.55; margin-top: 2px; }
+
+  .month-bar {
+    background: var(--accent);
+    padding: 0 16px 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .month-bar select {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+  }
+
+  .month-bar select option { background: #2C2C2A; color: #fff; }
+
+  .refresh-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .content { padding: 12px 14px; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .stat {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+
+  .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-num { font-size: 26px; font-weight: 600; }
+  .stat-num.g { color: var(--green); }
+  .stat-num.r { color: var(--red); }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .f-btn {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 12px;
+    font-family: 'Sarabun', sans-serif;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .f-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .f-btn.active.g { background: var(--green); border-color: var(--green); }
+  .f-btn.active.r { background: var(--red); border-color: var(--red); }
+
+  .search {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: var(--card);
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .search:focus { outline: none; border-color: #ABABAB; }
+
+  .list { display: flex; flex-direction: column; gap: 6px; }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 13px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: opacity 0.2s;
+  }
+
+  .card.paid { border-left: 3px solid var(--green); }
+  .card.unpaid { border-left: 3px solid #E8E6E0; }
+
+  .card-left { flex: 1; min-width: 0; }
+  .card-village { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-num { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .card-date { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 500; }
+
+  .pay-btn {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .pay-btn.do-pay { background: var(--green-bg); border-color: var(--green); color: var(--green-text); }
+  .pay-btn.do-unpay { background: var(--red-bg); border-color: #EDCDC4; color: var(--red-text); }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .add-toggle {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    border-radius: var(--radius);
+    border: 1.5px dashed var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+  }
+
+  .add-form {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+
+  .add-form input {
+    width: 100%;
+    padding: 9px 12px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .add-form input:focus { outline: none; border-color: #ABABAB; }
+
+  .add-submit {
+    width: 100%;
+    padding: 10px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>ระบบติดตามค่าเช่าบ้าน</h1>
+  <p id="syncStatus">กำลังโหลด...</p>
+</div>
+
+<div class="month-bar">
+  <select id="monthSel" onchange="load()"></select>
+  <select id="yearSel" onchange="load()"></select>
+  <button class="refresh-btn" onclick="load()">↻</button>
+</div>
+
+<div class="content">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">โอนแล้ว</div>
+      <div class="stat-num g" id="sPaid">—</div>
+      <div class="progress-bar"><div class="progress-fill" id="sBar" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">ยังไม่โอน</div>
+      <div class="stat-num r" id="sUnpaid">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">ทั้งหมด</div>
+      <div class="stat-num" id="sTotal">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">คืบหน้า</div>
+      <div class="stat-num g" id="sPct">—</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <button class="f-btn active" id="fa" onclick="setFilter('all')">ทั้งหมด</button>
+    <button class="f-btn g" id="fp" onclick="setFilter('paid')">โอนแล้ว</button>
+    <button class="f-btn r" id="fu" onclick="setFilter('unpaid')">ยังไม่โอน</button>
+  </div>
+
+  <input class="search" type="text" placeholder="ค้นหาหมู่บ้าน / เลขที่..." id="searchBox" oninput="render()">
+
+  <div class="list" id="houseList">
+    <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>
+  </div>
+
+  <button class="add-toggle" id="addToggle" onclick="toggleAdd()">+ เพิ่มบ้านเช่าใหม่</button>
+  <div class="add-form" id="addForm">
+    <h3>เพิ่มบ้านเช่าใหม่</h3>
+    <div class="form-row">
+      <input type="text" id="nVillage" placeholder="หมู่บ้าน">
+      <input type="text" id="nNum" placeholder="บ้านเลขที่">
+    </div>
+    <input type="text" id="nNote" placeholder="หมายเหตุ (เช่น บ้าน / ออฟฟิศ)">
+    <button class="add-submit" onclick="addHouse()">เพิ่ม</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwjuYeGbwv60NoMYwv-VeOeb_qsRLB9oupkLcQYJoHUTgPxkAx4QEfdinhc-FvSDz0U/exec';
+const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+let houses = [];
+let paid = {};
+let filter = 'all';
+const now = new Date();
+
+const mSel = document.getElementById('monthSel');
+const ySel = document.getElementById('yearSel');
+MONTHS.forEach((m, i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = m;
+  if (i === now.getMonth()) o.selected = true;
+  mSel.appendChild(o);
+});
+for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 1; y++) {
+  const o = document.createElement('option');
+  o.value = y; o.textContent = (y + 543);
+  if (y === now.getFullYear()) o.selected = true;
+  ySel.appendChild(o);
+}
+
+async function api(params) {
+  const url = API + '?' + new URLSearchParams(params);
+  const r = await fetch(url);
+  return r.json();
+}
+
+async function load() {
+  document.getElementById('syncStatus').textContent = 'กำลังโหลด...';
+  document.getElementById('houseList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  try {
+    const m = mSel.value;
+    const y = ySel.value;
+    const [h, p] = await Promise.all([
+      api({ action: 'getHouses' }),
+      api({ action: 'getPayments', month: m, year: y })
+    ]);
+    houses = h.houses || [];
+    paid = p.paid || {};
+    document.getElementById('syncStatus').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'});
+    render();
+  } catch(e) {
+    document.getElementById('syncStatus').textContent = 'โหลดไม่สำเร็จ';
+    document.getElementById('houseList').innerHTML = '<div class="empty">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่ ↻</div>';
+  }
+}
+
+function render() {
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const paidCount = houses.filter(h => paid[h.id]).length;
+  const total = houses.length;
+  const unpaid = total - paidCount;
+  const pct = total ? Math.round(paidCount / total * 100) : 0;
+
+  document.getElementById('sPaid').textContent = paidCount;
+  document.getElementById('sUnpaid').textContent = unpaid;
+  document.getElementById('sTotal').textContent = total;
+  document.getElementById('sPct').textContent = pct + '%';
+  document.getElementById('sBar').style.width = pct + '%';
+
+  let list = houses.filter(h => {
+    const match = !q || (h.village + h.num + (h.note||'')).toLowerCase().includes(q);
+    if (!match) return false;
+    if (filter === 'paid') return !!paid[h.id];
+    if (filter === 'unpaid') return !paid[h.id];
+    return true;
+  });
+
+  const el = document.getElementById('houseList');
+  if (!list.length) { el.innerHTML = '<div class="empty">ไม่พบรายการ</div>'; return; }
+
+  el.innerHTML = list.map(h => {
+    const isPaid = !!paid[h.id];
+    const date = paid[h.id] || '';
+    return `<div class="card ${isPaid ? 'paid' : 'unpaid'}">
+      <div class="card-left">
+        <div class="card-village">${h.village}</div>
+        <div class="card-num">เลขที่ ${h.num}${h.note ? ' · ' + h.note : ''}</div>
+        ${isPaid ? `<div class="card-date">✓ โอน ${date}</div>` : ''}
+      </div>
+      <button class="pay-btn ${isPaid ? 'do-unpay' : 'do-pay'}" onclick="togglePay(${h.id})">${isPaid ? 'ยกเลิก' : 'โอนแล้ว'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function togglePay(id) {
+  const m = mSel.value;
+  const y = ySel.value;
+  const wasPaid = !!paid[id];
+  const d = new Date();
+  const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+
+  if (wasPaid) { delete paid[id]; } else { paid[id] = dateStr; }
+  render();
+
+  try {
+    await api({ action: 'togglePay', id, month: m, year: y, date: dateStr });
+    showToast(wasPaid ? 'ยกเลิกแล้ว' : '✓ บันทึกการโอนแล้ว');
+  } catch(e) {
+    if (wasPaid) { paid[id] = dateStr; } else { delete paid[id]; }
+    render();
+    showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
+}
+
+async function addHouse() {
+  const v = document.getElementById('nVillage').value.trim();
+  const n = document.getElementById('nNum').value.trim();
+  const note = document.getElementById('nNote').value.trim();
+  if (!v || !n) { showToast('กรุณากรอกหมู่บ้านและเลขที่'); return; }
+  try {
+    await api({ action: 'addHouse', village: v, num: n, note });
+    document.getElementById('nVillage').value = '';
+    document.getElementById('nNum').value = '';
+    document.getElementById('nNote').value = '';
+    showToast('เพิ่มบ้านเช่าใหม่แล้ว');
+    load();
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
+}
+
+function setFilter(f) {
+  filter = f;
+  ['fa','fp','fu'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(f==='all'?'fa':f==='paid'?'fp':'fu').classList.add('active');
+  render();
+}
+
+function toggleAdd() {
+  const f = document.getElementById('addForm');
+  const b = document.getElementById('addToggle');
+  const show = f.style.display !== 'block';
+  f.style.display = show ? 'block' : 'none';
+  b.textContent = show ? '✕ ซ่อนฟอร์ม' : '+ เพิ่มบ้านเช่าใหม่';
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+load();
+</script>
+</body>
+</html>
