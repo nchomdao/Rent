@@ -80,18 +80,18 @@
 </style>
 </head>
 <body>
- 
+
 <div class="topbar">
   <h1>ระบบติดตามค่าเช่าบ้าน</h1>
   <p id="syncStatus">กำลังโหลด...</p>
 </div>
- 
+
 <div class="month-bar">
   <select id="monthSel" onchange="load()"></select>
   <select id="yearSel" onchange="load()"></select>
   <button class="refresh-btn" onclick="load()">↻</button>
 </div>
- 
+
 <div class="content">
   <div class="stats">
     <div class="stat">
@@ -112,19 +112,19 @@
       <div class="stat-num g" id="sPct">—</div>
     </div>
   </div>
- 
+
   <div class="filter-row">
     <button class="f-btn active" id="fa" onclick="setFilter('all')">ทั้งหมด</button>
     <button class="f-btn g" id="fp" onclick="setFilter('paid')">โอนแล้ว</button>
     <button class="f-btn r" id="fu" onclick="setFilter('unpaid')">ยังไม่โอน</button>
   </div>
- 
+
   <input class="search" type="text" placeholder="ค้นหาหมู่บ้าน / เลขที่..." id="searchBox" oninput="render()">
- 
+
   <div class="list" id="houseList">
     <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>
   </div>
- 
+
   <button class="add-toggle" id="addToggle" onclick="toggleAdd()">+ เพิ่มบ้านเช่าใหม่</button>
   <div class="add-form" id="addForm">
     <h3>เพิ่มบ้านเช่าใหม่</h3>
@@ -136,7 +136,7 @@
     <button class="add-submit" onclick="addHouse()">เพิ่ม</button>
   </div>
 </div>
- 
+
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3 id="modalTitle">บันทึกวันที่โอน</h3>
@@ -149,17 +149,17 @@
     </div>
   </div>
 </div>
- 
+
 <div class="toast" id="toast"></div>
- 
+
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwjuYeGbwv60NoMYwv-VeOeb_qsRLB9oupkLcQYJoHUTgPxkAx4QEfdinhc-FvSDz0U/exec';
 const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
- 
+
 let houses = [], paid = {}, filter = 'all';
 let modalId = null;
 const now = new Date();
- 
+
 const mSel = document.getElementById('monthSel');
 const ySel = document.getElementById('yearSel');
 MONTHS.forEach((m,i) => {
@@ -174,12 +174,12 @@ for (let y = now.getFullYear()-1; y <= now.getFullYear()+1; y++) {
   if (y === now.getFullYear()) o.selected = true;
   ySel.appendChild(o);
 }
- 
+
 async function api(params) {
   const r = await fetch(API + '?' + new URLSearchParams(params));
   return r.json();
 }
- 
+
 async function load() {
   document.getElementById('syncStatus').textContent = 'กำลังโหลด...';
   document.getElementById('houseList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
@@ -198,7 +198,7 @@ async function load() {
     document.getElementById('houseList').innerHTML = '<div class="empty">เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่ ↻</div>';
   }
 }
- 
+
 function render() {
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   const paidCount = houses.filter(h => paid[h.id]).length;
@@ -209,7 +209,7 @@ function render() {
   document.getElementById('sTotal').textContent = total;
   document.getElementById('sPct').textContent = pct + '%';
   document.getElementById('sBar').style.width = pct + '%';
- 
+
   let list = houses.filter(h => {
     const match = !q || (h.village+h.num+(h.note||'')).toLowerCase().includes(q);
     if (!match) return false;
@@ -217,10 +217,10 @@ function render() {
     if (filter === 'unpaid') return !paid[h.id];
     return true;
   });
- 
+
   const el = document.getElementById('houseList');
   if (!list.length) { el.innerHTML = '<div class="empty">ไม่พบรายการ</div>'; return; }
- 
+
   el.innerHTML = list.map(h => {
     const isPaid = !!paid[h.id];
     const date = paid[h.id] || '';
@@ -236,7 +236,7 @@ function render() {
     </div>`;
   }).join('');
 }
- 
+
 function openModal(id) {
   modalId = id;
   const h = houses.find(x => x.id === id);
@@ -246,12 +246,12 @@ function openModal(id) {
   document.getElementById('modalDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('modalBg').classList.add('open');
 }
- 
+
 function closeModal() {
   document.getElementById('modalBg').classList.remove('open');
   modalId = null;
 }
- 
+
 async function confirmDate() {
   const dateVal = document.getElementById('modalDate').value;
   if (!dateVal) { showToast('กรุณาเลือกวันที่'); return; }
@@ -272,7 +272,7 @@ async function confirmDate() {
     showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
   }
 }
- 
+
 async function cancelPay(id) {
   const m = mSel.value, y = ySel.value;
   const prev = paid[id];
@@ -287,7 +287,7 @@ async function cancelPay(id) {
     showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
   }
 }
- 
+
 async function addHouse() {
   const v = document.getElementById('nVillage').value.trim();
   const n = document.getElementById('nNum').value.trim();
@@ -302,14 +302,14 @@ async function addHouse() {
     load();
   } catch(e) { showToast('เกิดข้อผิดพลาด กรุณาลองใหม่'); }
 }
- 
+
 function setFilter(f) {
   filter = f;
   ['fa','fp','fu'].forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById(f==='all'?'fa':f==='paid'?'fp':'fu').classList.add('active');
   render();
 }
- 
+
 function toggleAdd() {
   const f = document.getElementById('addForm');
   const b = document.getElementById('addToggle');
@@ -317,7 +317,7 @@ function toggleAdd() {
   f.style.display = show ? 'block' : 'none';
   b.textContent = show ? '✕ ซ่อนฟอร์ม' : '+ เพิ่มบ้านเช่าใหม่';
 }
- 
+
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -326,11 +326,11 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
 }
- 
+
 document.getElementById('modalBg').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
- 
+
 load();
 </script>
 </body>
